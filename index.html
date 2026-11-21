@@ -1,0 +1,345 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Habit Streak</title>
+<meta name="description" content="A small, private counter for the habits you are quitting or keeping.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600&family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400;1,600&family=JetBrains+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f4efe6; --paper-2:#ebe3d4; --ink:#1f1b16; --mute:#6b6258;
+    --terra:#9c3d2e; --gold:#b08d57; --ok:#4f6b3a; --line:#d9cdb8;
+  }
+  @media (prefers-color-scheme: dark){
+    :root:not([data-theme="light"]){
+      --paper:#17130f; --paper-2:#211b15; --ink:#f1e8da; --mute:#a89c8c;
+      --terra:#d0705d; --gold:#c9a66b; --ok:#9bbf7f; --line:#3a3128;
+    }
+  }
+  :root[data-theme="dark"]{
+    --paper:#17130f; --paper-2:#211b15; --ink:#f1e8da; --mute:#a89c8c;
+    --terra:#d0705d; --gold:#c9a66b; --ok:#9bbf7f; --line:#3a3128;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;background:var(--paper);color:var(--ink)}
+  body{font-family:"Cormorant Garamond",Georgia,serif;font-size:19px;line-height:1.45;min-height:100vh}
+  .wrap{max-width:760px;margin:0 auto;padding:40px 16px 80px}
+  header{text-align:center;border-bottom:1px solid var(--line);padding-bottom:22px;margin-bottom:28px}
+  .eyebrow{font-family:Cinzel,serif;letter-spacing:.42em;font-size:12px;color:var(--mute);text-transform:uppercase}
+  h1{font-style:italic;font-weight:600;font-size:clamp(44px,9vw,68px);margin:6px 0 2px;line-height:1}
+  .rule{width:110px;height:1px;background:var(--terra);margin:14px auto}
+  .sub{font-style:italic;color:var(--mute);margin:0}
+  .bar{display:flex;gap:10px;justify-content:center;margin-top:16px;flex-wrap:wrap}
+  button,select,input{font:inherit;color:inherit}
+  .btn{font-family:Cinzel,serif;font-size:12px;letter-spacing:.2em;text-transform:uppercase;
+       background:transparent;border:1px solid var(--gold);padding:9px 14px;cursor:pointer;color:var(--ink)}
+  .btn:hover{background:var(--paper-2)}
+  .btn.primary{background:var(--ink);color:var(--paper);border-color:var(--ink)}
+  .btn.primary:hover{opacity:.9;background:var(--ink)}
+  .btn.ghost{border-color:var(--line)}
+  .btn.danger{border-color:var(--terra);color:var(--terra)}
+  form.add{display:grid;grid-template-columns:1fr auto auto;gap:10px;align-items:end;
+           border:1px solid var(--line);padding:16px;background:var(--paper-2);margin-bottom:30px}
+  form.add label{display:block;font-family:Cinzel,serif;font-size:11px;letter-spacing:.25em;color:var(--mute);text-transform:uppercase;margin-bottom:4px}
+  form.add input,form.add select{width:100%;background:var(--paper);border:1px solid var(--line);padding:9px 10px;font-size:18px}
+  form.add .full{grid-column:1/-1}
+  @media (max-width:560px){ form.add{grid-template-columns:1fr} }
+  .empty{text-align:center;color:var(--mute);font-style:italic;padding:30px 0}
+  .card{border:1px solid var(--gold);padding:22px 22px 18px;margin-bottom:22px;position:relative;background:var(--paper)}
+  .card::before{content:"";position:absolute;inset:5px;border:1px solid var(--line);pointer-events:none}
+  .card-top{display:flex;justify-content:space-between;gap:10px;font-family:Cinzel,serif;font-size:11px;letter-spacing:.3em;color:var(--terra);text-transform:uppercase;position:relative}
+  .card-top .inv{color:var(--mute);letter-spacing:.15em}
+  .card h2{font-weight:600;font-size:30px;margin:8px 0 2px;position:relative}
+  .meta{color:var(--mute);font-style:italic;font-size:17px;position:relative}
+  .clock{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:18px 0 14px;position:relative}
+  .unit{text-align:center;border-top:1px solid var(--line);padding-top:8px}
+  .num{font-family:"JetBrains Mono",monospace;font-weight:600;font-size:clamp(26px,6vw,40px);line-height:1}
+  .lbl{font-family:Cinzel,serif;font-size:10px;letter-spacing:.3em;color:var(--mute);text-transform:uppercase;margin-top:4px}
+  .progress{position:relative;margin:6px 0 4px}
+  .track{height:6px;background:var(--paper-2);border:1px solid var(--line)}
+  .fill{height:100%;background:var(--terra);width:0;transition:width .6s}
+  .pnote{display:flex;justify-content:space-between;font-size:15px;color:var(--mute);font-style:italic;margin-top:4px}
+  .stats{display:flex;gap:22px;flex-wrap:wrap;font-size:16px;color:var(--mute);margin:10px 0 12px;position:relative}
+  .stats b{color:var(--ink);font-family:"JetBrains Mono",monospace;font-weight:600;font-size:15px}
+  .medals{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0 14px;position:relative}
+  .medal{font-family:Cinzel,serif;font-size:10px;letter-spacing:.15em;padding:3px 7px;border:1px solid var(--line);color:var(--mute)}
+  .medal.on{border-color:var(--gold);color:var(--ink);background:var(--paper-2)}
+  .actions{display:flex;gap:8px;flex-wrap:wrap;position:relative}
+  details.hist{position:relative;margin-top:12px;font-size:16px}
+  details.hist summary{cursor:pointer;color:var(--mute);font-style:italic}
+  details.hist ol{margin:8px 0 0;padding-left:22px;color:var(--mute)}
+  footer{margin-top:40px;text-align:center;color:var(--mute);font-style:italic;font-size:16px;border-top:1px solid var(--line);padding-top:18px}
+  footer .bar{margin-top:10px}
+  dialog{border:1px solid var(--gold);background:var(--paper);color:var(--ink);padding:24px;max-width:420px;width:calc(100% - 32px)}
+  dialog::backdrop{background:rgba(20,14,8,.45)}
+  dialog h3{font-weight:600;font-size:26px;margin:0 0 6px}
+  dialog p{margin:0 0 16px;color:var(--mute);font-style:italic}
+  dialog .actions{justify-content:flex-end}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%) translateY(20px);opacity:0;background:var(--ink);color:var(--paper);
+         padding:10px 16px;font-family:Cinzel,serif;font-size:12px;letter-spacing:.2em;transition:.3s;pointer-events:none}
+  .toast.show{opacity:1;transform:translateX(-50%)}
+  @keyframes pop{0%{transform:scale(.6);opacity:0}60%{transform:scale(1.15)}100%{transform:scale(1);opacity:1}}
+  .medal.new{animation:pop .6s}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <div class="eyebrow" data-i="eyebrow">A private ledger of days</div>
+    <h1>Habit Streak</h1>
+    <div class="rule"></div>
+    <p class="sub" data-i="sub">Count the days since you stopped — or started. Everything stays on this device.</p>
+    <div class="bar">
+      <button class="btn ghost" id="lang" type="button">TR</button>
+      <button class="btn ghost" id="theme" type="button" data-i="theme">Theme</button>
+    </div>
+  </header>
+
+  <form class="add" id="add" autocomplete="off">
+    <div>
+      <label for="name" data-i="name">Habit</label>
+      <input id="name" required maxlength="60" data-ph="namePh" placeholder="e.g. No cigarettes">
+    </div>
+    <div>
+      <label for="kind" data-i="kind">Kind</label>
+      <select id="kind">
+        <option value="quit" data-i="quit">Quitting</option>
+        <option value="build" data-i="build">Keeping</option>
+      </select>
+    </div>
+    <div>
+      <label for="since" data-i="since">Since</label>
+      <input id="since" type="datetime-local">
+    </div>
+    <div class="full"><button class="btn primary" type="submit" data-i="addBtn">Add to the ledger</button></div>
+  </form>
+
+  <main id="list"></main>
+
+  <footer>
+    <div data-i="foot">Stored only in your browser. Export a copy now and then.</div>
+    <div class="bar">
+      <button class="btn ghost" id="export" type="button" data-i="export">Export</button>
+      <label class="btn ghost" for="importFile" data-i="import">Import</label>
+      <input id="importFile" type="file" accept="application/json" hidden>
+    </div>
+  </footer>
+</div>
+
+<dialog id="confirm">
+  <h3 id="cTitle"></h3>
+  <p id="cText"></p>
+  <div class="actions">
+    <button class="btn ghost" value="cancel" id="cNo" data-i="cancel">Cancel</button>
+    <button class="btn danger" value="ok" id="cYes"></button>
+  </div>
+</dialog>
+<div class="toast" id="toast"></div>
+
+<script>
+(() => {
+  const KEY = "habit-streak:v1";
+  const MILESTONES = [1, 3, 7, 14, 30, 60, 90, 180, 365, 730];
+  const DAY = 86400000;
+
+  const T = {
+    en: {
+      eyebrow:"A private ledger of days", sub:"Count the days since you stopped — or started. Everything stays on this device.",
+      theme:"Theme", name:"Habit", namePh:"e.g. No cigarettes", kind:"Kind", quit:"Quitting", build:"Keeping", since:"Since",
+      addBtn:"Add to the ledger", foot:"Stored only in your browser. Export a copy now and then.", export:"Export", import:"Import",
+      cancel:"Cancel", empty:"The ledger is empty. Add your first habit above.",
+      days:"days", hours:"hours", minutes:"min", seconds:"sec", entry:"Entry", started:"since",
+      quitting:"Quitting", keeping:"Keeping", best:"Best streak", resets:"Restarts", next:"Next milestone",
+      reached:"All milestones reached", restart:"Restart", remove:"Remove", history:"Past streaks",
+      rTitle:"Restart this streak?", rText:"The current streak is saved to history and the clock starts again from now. Falling is part of it.",
+      rOk:"Restart", dTitle:"Remove this habit?", dText:"It and its history will be deleted from this device.", dOk:"Remove",
+      added:"Added", restarted:"Streak saved — begin again", removed:"Removed", imported:"Imported", bad:"That file could not be read",
+      milestone:(n)=> n===1?"1 day":n<7?`${n} days`:n===7?"1 week":n===14?"2 weeks":n<365?`${Math.round(n/30)} mo`:n===365?"1 year":"2 years",
+      newMedal:(m)=>`Milestone: ${m}`, ended:"ended"
+    },
+    tr: {
+      eyebrow:"Günlerin özel defteri", sub:"Bıraktığından ya da başladığından beri geçen günleri say. Her şey bu cihazda kalır.",
+      theme:"Tema", name:"Alışkanlık", namePh:"örn. Sigarasız", kind:"Tür", quit:"Bırakıyorum", build:"Sürdürüyorum", since:"Başlangıç",
+      addBtn:"Deftere ekle", foot:"Yalnızca tarayıcında saklanır. Arada bir yedek al.", export:"Dışa aktar", import:"İçe aktar",
+      cancel:"Vazgeç", empty:"Defter boş. İlk alışkanlığını yukarıdan ekle.",
+      days:"gün", hours:"saat", minutes:"dk", seconds:"sn", entry:"Kayıt", started:"başlangıç",
+      quitting:"Bırakıyorum", keeping:"Sürdürüyorum", best:"En uzun seri", resets:"Yeniden başlama", next:"Sıradaki hedef",
+      reached:"Tüm hedeflere ulaşıldı", restart:"Yeniden başla", remove:"Sil", history:"Geçmiş seriler",
+      rTitle:"Seri yeniden başlasın mı?", rText:"Mevcut seri geçmişe kaydedilir ve sayaç şimdiden yeniden başlar. Düşmek de yolun parçası.",
+      rOk:"Yeniden başla", dTitle:"Bu alışkanlık silinsin mi?", dText:"Kendisi ve geçmişi bu cihazdan silinir.", dOk:"Sil",
+      added:"Eklendi", restarted:"Seri kaydedildi — yeniden başla", removed:"Silindi", imported:"İçe aktarıldı", bad:"Dosya okunamadı",
+      milestone:(n)=> n===1?"1 gün":n<7?`${n} gün`:n===7?"1 hafta":n===14?"2 hafta":n<365?`${Math.round(n/30)} ay`:n===365?"1 yıl":"2 yıl",
+      newMedal:(m)=>`Hedef: ${m}`, ended:"bitiş"
+    }
+  };
+
+  const store = {
+    get(k, d){ try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } },
+    set(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); } catch {} }
+  };
+
+  let state = store.get(KEY, { lang: (navigator.language||"en").startsWith("tr") ? "tr" : "en", theme: null, habits: [] });
+  let lang = state.lang;
+  const t = (k) => T[lang][k];
+  const save = () => store.set(KEY, state);
+  const $ = (s, r=document) => r.querySelector(s);
+  const esc = (s) => String(s).replace(/[&<>"']/g, c => ({ "&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;" }[c]));
+
+  function applyTheme(){
+    if (state.theme) document.documentElement.dataset.theme = state.theme;
+    else delete document.documentElement.dataset.theme;
+  }
+  function applyLang(){
+    document.documentElement.lang = lang;
+    document.querySelectorAll("[data-i]").forEach(el => { const v = t(el.dataset.i); if (typeof v === "string") el.textContent = v; });
+    document.querySelectorAll("[data-ph]").forEach(el => el.placeholder = t(el.dataset.ph));
+    $("#lang").textContent = lang === "en" ? "TR" : "EN";
+    render();
+  }
+
+  const fmtDate = (ms) => new Date(ms).toLocaleString(lang === "tr" ? "tr-TR" : "en-GB", { dateStyle:"medium", timeStyle:"short" });
+  const pad = (n) => String(n).padStart(2,"0");
+  const roman = (n) => { const m=[[1000,"M"],[900,"CM"],[500,"D"],[400,"CD"],[100,"C"],[90,"XC"],[50,"L"],[40,"XL"],[10,"X"],[9,"IX"],[5,"V"],[4,"IV"],[1,"I"]]; let r=""; for(const [v,s] of m){ while(n>=v){ r+=s; n-=v; } } return r; };
+
+  function split(ms){
+    ms = Math.max(0, ms);
+    const d = Math.floor(ms / DAY), h = Math.floor(ms % DAY / 3600000), m = Math.floor(ms % 3600000 / 60000), s = Math.floor(ms % 60000 / 1000);
+    return { d, h, m, s };
+  }
+  const best = (h, now) => Math.max(now - h.since, ...h.history.map(x => x.end - x.start), 0);
+
+  function render(){
+    const list = $("#list");
+    if (!state.habits.length){ list.innerHTML = `<p class="empty">${esc(t("empty"))}</p>`; return; }
+    const now = Date.now();
+    list.innerHTML = state.habits.map((h, i) => {
+      const el = now - h.since, days = el / DAY;
+      const reached = MILESTONES.filter(m => days >= m);
+      const next = MILESTONES.find(m => days < m);
+      const prev = reached.length ? reached[reached.length-1] : 0;
+      const pct = next ? ((days - prev) / (next - prev)) * 100 : 100;
+      const hist = h.history.slice().reverse().map(x => `<li>${fmtDate(x.start)} → ${fmtDate(x.end)} · <b>${Math.floor((x.end-x.start)/DAY)}</b> ${esc(t("days"))}</li>`).join("");
+      return `
+      <article class="card" data-id="${h.id}">
+        <div class="card-top"><span>${esc(t("entry"))} ${roman(i+1)} · ${esc(h.kind==="quit"?t("quitting"):t("keeping"))}</span><span class="inv">INV. HS-${String(i+1).padStart(3,"0")}</span></div>
+        <h2>${esc(h.name)}</h2>
+        <div class="meta">${esc(t("started"))} ${fmtDate(h.since)}</div>
+        <div class="clock">
+          <div class="unit"><div class="num" data-u="d">0</div><div class="lbl">${esc(t("days"))}</div></div>
+          <div class="unit"><div class="num" data-u="h">00</div><div class="lbl">${esc(t("hours"))}</div></div>
+          <div class="unit"><div class="num" data-u="m">00</div><div class="lbl">${esc(t("minutes"))}</div></div>
+          <div class="unit"><div class="num" data-u="s">00</div><div class="lbl">${esc(t("seconds"))}</div></div>
+        </div>
+        <div class="progress">
+          <div class="track"><div class="fill" style="width:${pct.toFixed(1)}%"></div></div>
+          <div class="pnote"><span>${next ? esc(t("next")) + ": " + esc(t("milestone")(next)) : esc(t("reached"))}</span><span>${next ? Math.floor(pct) + "%" : ""}</span></div>
+        </div>
+        <div class="medals">${MILESTONES.map(m => `<span class="medal ${days>=m?"on":""}" data-m="${m}">${esc(t("milestone")(m))}</span>`).join("")}</div>
+        <div class="stats">
+          <span>${esc(t("best"))}: <b data-best>${Math.floor(best(h, now)/DAY)}</b> ${esc(t("days"))}</span>
+          <span>${esc(t("resets"))}: <b>${h.history.length}</b></span>
+        </div>
+        <div class="actions">
+          <button class="btn" data-act="restart" type="button">${esc(t("restart"))}</button>
+          <button class="btn danger" data-act="remove" type="button">${esc(t("remove"))}</button>
+        </div>
+        ${hist ? `<details class="hist"><summary>${esc(t("history"))} (${h.history.length})</summary><ol>${hist}</ol></details>` : ""}
+      </article>`;
+    }).join("");
+    tick();
+  }
+
+  const seen = new Map();
+  function tick(){
+    const now = Date.now();
+    document.querySelectorAll(".card").forEach(card => {
+      const h = state.habits.find(x => x.id === card.dataset.id); if (!h) return;
+      const p = split(now - h.since);
+      card.querySelector('[data-u="d"]').textContent = p.d;
+      card.querySelector('[data-u="h"]').textContent = pad(p.h);
+      card.querySelector('[data-u="m"]').textContent = pad(p.m);
+      card.querySelector('[data-u="s"]').textContent = pad(p.s);
+      const days = (now - h.since) / DAY;
+      const count = MILESTONES.filter(m => days >= m).length;
+      const before = seen.get(h.id);
+      if (before !== undefined && count > before){
+        const m = MILESTONES[count-1];
+        const medal = card.querySelector(`.medal[data-m="${m}"]`);
+        if (medal){ medal.classList.add("on","new"); }
+        toast(t("newMedal")(t("milestone")(m)));
+        render();
+      }
+      seen.set(h.id, count);
+    });
+  }
+
+  function toast(msg){
+    const el = $("#toast"); el.textContent = msg; el.classList.add("show");
+    clearTimeout(toast._t); toast._t = setTimeout(() => el.classList.remove("show"), 2200);
+  }
+
+  function ask(title, text, ok){
+    return new Promise(res => {
+      const d = $("#confirm");
+      $("#cTitle").textContent = title; $("#cText").textContent = text; $("#cYes").textContent = ok;
+      const done = (v) => { d.close(); res(v); };
+      $("#cYes").onclick = () => done(true); $("#cNo").onclick = () => done(false);
+      d.oncancel = () => res(false);
+      d.showModal();
+    });
+  }
+
+  const nowLocal = () => { const d = new Date(); d.setSeconds(0,0); return new Date(d - d.getTimezoneOffset()*60000).toISOString().slice(0,16); };
+  $("#since").value = nowLocal();
+
+  $("#add").addEventListener("submit", e => {
+    e.preventDefault();
+    const name = $("#name").value.trim(); if (!name) return;
+    const since = $("#since").value ? new Date($("#since").value).getTime() : Date.now();
+    state.habits.push({ id: crypto.randomUUID ? crypto.randomUUID() : String(Date.now()+Math.random()), name, kind: $("#kind").value, since: Math.min(since, Date.now()), history: [] });
+    save(); $("#name").value = ""; $("#since").value = nowLocal(); render(); toast(t("added"));
+  });
+
+  $("#list").addEventListener("click", async e => {
+    const btn = e.target.closest("button[data-act]"); if (!btn) return;
+    const id = btn.closest(".card").dataset.id; const h = state.habits.find(x => x.id === id); if (!h) return;
+    if (btn.dataset.act === "restart"){
+      if (!await ask(t("rTitle"), t("rText"), t("rOk"))) return;
+      const now = Date.now(); h.history.push({ start: h.since, end: now }); h.since = now; seen.delete(h.id);
+      save(); render(); toast(t("restarted"));
+    } else if (btn.dataset.act === "remove"){
+      if (!await ask(t("dTitle"), t("dText"), t("dOk"))) return;
+      state.habits = state.habits.filter(x => x.id !== id); save(); render(); toast(t("removed"));
+    }
+  });
+
+  $("#lang").onclick = () => { lang = state.lang = lang === "en" ? "tr" : "en"; save(); applyLang(); };
+  $("#theme").onclick = () => {
+    const dark = state.theme ? state.theme === "dark" : matchMedia("(prefers-color-scheme: dark)").matches;
+    state.theme = dark ? "light" : "dark"; save(); applyTheme();
+  };
+  $("#export").onclick = () => {
+    const blob = new Blob([JSON.stringify(state.habits, null, 2)], { type: "application/json" });
+    const a = document.createElement("a"); a.href = URL.createObjectURL(blob);
+    a.download = `habit-streak-${new Date().toISOString().slice(0,10)}.json`; a.click(); URL.revokeObjectURL(a.href);
+  };
+  $("#importFile").onchange = async e => {
+    const f = e.target.files[0]; if (!f) return;
+    try {
+      const data = JSON.parse(await f.text());
+      if (!Array.isArray(data)) throw 0;
+      state.habits = data.filter(h => h && h.name && Number.isFinite(h.since)).map(h => ({ id: h.id || String(Math.random()), name: String(h.name).slice(0,60), kind: h.kind === "build" ? "build" : "quit", since: h.since, history: Array.isArray(h.history) ? h.history.filter(x => Number.isFinite(x.start) && Number.isFinite(x.end)) : [] }));
+      save(); render(); toast(t("imported"));
+    } catch { toast(t("bad")); }
+    e.target.value = "";
+  };
+
+  applyTheme(); applyLang();
+  setInterval(tick, 1000);
+})();
+</script>
+</body>
+</html>
